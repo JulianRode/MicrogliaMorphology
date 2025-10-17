@@ -33,7 +33,7 @@ function listFiles(dir, numFiles, fileList, searchString) {
     //numFiles = dir.getFileCount();
     for (i = 0; i < (numFiles); i++) {
         fileName = fileList[i];
-        if (substring(fileName, 0, lengthOf(searchString)) == searchString){
+        if (startsWith(fileName, searchString)){
         	openFile(dir + fileName);
             print(dir + fileName);
         }
@@ -117,8 +117,7 @@ function listFiles(dir, numFiles, fileList, searchString) {
 			
 			// extract out common string to search for across folders from original .tiff files
 			ColorByCluster_originalimage = ColorByCluster_originalimages[i];
-			subStringArray = split(ColorByCluster_originalimage, "(\.tif)");
-			StringToSearchFor = subStringArray[0]; 
+			StringToSearchFor = File.getNameWithoutExtension(ColorByCluster_originalimages_dir + ColorByCluster_originalimage); 
 			print(StringToSearchFor);
 			
 			// loop through thresholded folder, find the file with matching string, open, and print file name

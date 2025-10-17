@@ -106,30 +106,32 @@ function cellROI(input, output, filename, min, max){
 		run("Analyze Particles...", "pixel add");
 		roiManager("Show All");
 		roiManager("Measure");	
-				
-		for (i = 0; i < nResults(); i++) {
-		//for (i = 0; i < 5; i++) {
-			selectWindow("Results");
-			v = getResult('Area', i);
-			
-			if((min < v) && (v < max)){
+		
+		if (nResults > 0) {
+			for (i = 0; i < nResults(); i++) {
+			//for (i = 0; i < 5; i++) {
 				selectWindow("Results");
-				label = getResultString("Label", i);
-				label = label.replace(':','_');
-				roiManager("Select", i);
-				run("Duplicate...", "title=&label");
-				setBackgroundColor(0, 0, 0);
-				run("Clear Outside");
-				saveAs("Tiff", dirCropOutput+File.separator+label+".tif");
-				print(label);
-				selectWindow(label+".tif");
-				run("Close");				
+				v = getResult('Area', i);
+				
+				if((min < v) && (v < max)){
+					selectWindow("Results");
+					label = getResultString("Label", i);
+					label = label.replace(':','_');
+					roiManager("Select", i);
+					run("Duplicate...", "title=&label");
+					setBackgroundColor(0, 0, 0);
+					run("Clear Outside");
+					saveAs("Tiff", dirCropOutput+File.separator+label+".tif");
+					print(label);
+					selectWindow(label+".tif");
+					run("Close");				
+				}
 			}
+			selectWindow("Results");//needs to be in this if statement in case there were no ROIs
+		   	run("Close");
 		}
 		selectWindow(mainTitle);
 		run("Close");
-		selectWindow("Results");
-	   	run("Close");
 	    selectWindow("ROI Manager");
 	    run("Close");
     }
