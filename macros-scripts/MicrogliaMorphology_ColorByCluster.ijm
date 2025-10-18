@@ -13,7 +13,7 @@ function findRoiWithName(roiName) {
 	for (i=0; i<nR; i++) { 
 		roiManager("Select", i); 
 		rName = Roi.getName(); 
-		if (matches(rName, roiName)) { 
+		if (matches(substring(rName, 0, 5), substring(roiName, 0, 5))) { 
 			return i; 
 		} 
 	} 
@@ -37,8 +37,8 @@ function listFiles(dir, numFiles, fileList, searchString) {
         	openFile(dir + fileName);
             print(dir + fileName);
         }
-        }
     }
+}
 
 
 // MACRO STARTS HERE
