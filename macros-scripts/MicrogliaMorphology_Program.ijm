@@ -87,7 +87,7 @@ function thresholding2(input, output, filename) {
 		// save thresholded + cleaned image -- this is the input for skeleton analysis below
 		saveAs("Tiff", output + filename + "_thresholded");
 		
-		close();
+		close(filename);
 	}
 
 //Generating Single Cell ROIs from thresholded images
@@ -159,8 +159,8 @@ function skeleton(input, output, output2, filename) {
 	      // save tagged skeleton 
 	      saveAs("Tiff", output2 + filename + "_taggedskeleton");
 	      //close open windows
-	      close();
-	      close();
+	      close("Results");
+	      close(filename);
     }
 
 // choices in drop-down prompts for MicrogliaMorphology macro
@@ -415,19 +415,23 @@ thresholding_parameters2 = newArray("Bernsen","Contrast","Mean","Median","MidGre
 	   	run("Close");
 		
 		print("Thresholding finished");
-
+		
+		if (!use_batchmode) {
 // Progress message
-		Dialog.create("MicrogliaMorphology");
-		Dialog.addMessage("Now that we are done thresholding,");
-		Dialog.addMessage("we will generate single-cell ROIs");
-		Dialog.show();
-
+			Dialog.create("MicrogliaMorphology");
+			Dialog.addMessage("Now that we are done thresholding,");
+			Dialog.addMessage("we will generate single-cell ROIs");
+			Dialog.show();
+	
 // STEP 2. Generating single-cell ROIs command
-
-  		//use file browser to choose path and files to run plugin on
-		setOption("JFileChooser",true);
-		File.setDefaultDir(output); //per default set it to the directory that was just output 
-		thresholded_dir=getDirectory("Choose parent folder containing thresholded images");
+		
+	  		//use file browser to choose path and files to run plugin on
+			setOption("JFileChooser",true);
+			File.setDefaultDir(output); //per default set it to the directory that was just output 
+			thresholded_dir=getDirectory("Choose parent folder containing thresholded images");
+		} else {
+			thresholded_dir = output;
+		}
 		thresholded_input=getFileList(thresholded_dir);
 		count=thresholded_input.length;
 	
@@ -435,20 +439,26 @@ thresholding_parameters2 = newArray("Bernsen","Contrast","Mean","Median","MidGre
 		setOption("JFileChooser",true);
 		cellROI_output=getDirectory("Choose output folder to write single cell images to");
 		
-		//dialog box
-		Dialog.create("MicrogliaMorphology");
-		Dialog.addMessage("Processing files from directory:");
-		parentname=split(thresholded_dir,"/");
-		Dialog.addMessage(parentname[(parentname.length)-1]);
-		Dialog.addMessage("which has this many images:");
-		Dialog.addMessage(count);
-		Dialog.addMessage("Select range of images you'd like to analyze");
-		Dialog.addNumber("Start at Image:", startAt);
-		Dialog.addNumber("Stop at Image:", endAt);
-		Dialog.show();
-		
-		startAt=Dialog.getNumber();
-		endAt=Dialog.getNumber();
+		if (!use_batchmode) {//skip dialog about file selection
+			//dialog box
+			Dialog.create("MicrogliaMorphology");
+			Dialog.addMessage("Processing files from directory:");
+			parentname=split(thresholded_dir,"/");
+			Dialog.addMessage(parentname[(parentname.length)-1]);
+			Dialog.addMessage("which has this many images:");
+			Dialog.addMessage(count);
+			Dialog.addMessage("Select range of images you'd like to analyze");
+			Dialog.addNumber("Start at Image:", startAt);
+			Dialog.addNumber("Stop at Image:", endAt);
+			Dialog.show();
+			
+			startAt=Dialog.getNumber();
+			endAt=Dialog.getNumber();
+		} else {
+			//use all thresholded images
+			startAt = 1;
+			endAt = thresholded_input.length;
+		}
 		
 		if (use_batchmode) {
 			setBatchMode(true);
@@ -472,18 +482,22 @@ thresholding_parameters2 = newArray("Bernsen","Contrast","Mean","Median","MidGre
 		
 	    print("Finished generating single cell ROIs. The following files were skipped: " + String.join(skipped_files, " "));
 
+		if (!use_batchmode) {
 // Progress message
-		Dialog.create("MicrogliaMorphology");
-		Dialog.addMessage("Now that we are done generating single-cell ROIs,");
-		Dialog.addMessage("we will analyze their skeletons");
-		Dialog.show();
-
+			Dialog.create("MicrogliaMorphology");
+			Dialog.addMessage("Now that we are done generating single-cell ROIs,");
+			Dialog.addMessage("we will analyze their skeletons");
+			Dialog.show();
+	
 // STEP 3. Skeletonize/AnalyzeSkeleton
         
-        //use file browser to choose path and files to run plugin on
-		setOption("JFileChooser",true);
-		File.setDefaultDir(cellROI_output);
-		cell_dir=getDirectory("Choose parent folder containing single-cell images");
+	        //use file browser to choose path and files to run plugin on
+			setOption("JFileChooser",true);
+			File.setDefaultDir(cellROI_output);
+			cell_dir=getDirectory("Choose parent folder containing single-cell images");
+		} else {
+			cell_dir = cellROI_output
+		}
 		cell_input=getFileList(cell_dir);
 		cell_count=cell_input.length;
 	
@@ -495,21 +509,28 @@ thresholding_parameters2 = newArray("Bernsen","Contrast","Mean","Median","MidGre
 		setOption("JFileChooser",true);
 		skeleton2_output=getDirectory("Choose output folder to write skeletonized images to");
 		
-		//dialog box
-		Dialog.create("MicrogliaMorphology");
-		Dialog.addMessage("Processing files from directory:");
-		parentname=split(cell_dir,"/");
-		Dialog.addMessage(parentname[(parentname.length)-1]);
-		Dialog.addMessage("which has this many images:");
-		Dialog.addMessage(cell_count);
-		Dialog.addMessage("Select range of cell images you'd like to analyze");
-		Dialog.addNumber("Start at Image:", startAt);
-		Dialog.addNumber("Stop at Image:", endAt);
-		Dialog.show();
+		if (!use_batchmode) {
+			//dialog box
+			Dialog.create("MicrogliaMorphology");
+			Dialog.addMessage("Processing files from directory:");
+			parentname=split(cell_dir,"/");
+			Dialog.addMessage(parentname[(parentname.length)-1]);
+			Dialog.addMessage("which has this many images:");
+			Dialog.addMessage(cell_count);
+			Dialog.addMessage("Select range of cell images you'd like to analyze");
+			Dialog.addNumber("Start at Image:", startAt);
+			Dialog.addNumber("Stop at Image:", endAt);
+			Dialog.show();
+			
+			startAt=Dialog.getNumber();
+			endAt=Dialog.getNumber();
+		} else {
+			//use all single cell images
+			startAt = 1;
+			endAt = cell_input.length;
+		}
+		}
 		
-		startAt=Dialog.getNumber();
-		endAt=Dialog.getNumber();
-       
     	if (use_batchmode) {
 			setBatchMode(true);
 		} else {
