@@ -286,22 +286,18 @@ thresholding_parameters2 = newArray("Bernsen","Contrast","Mean","Median","MidGre
 		run("Summarize");
 		area_min = getResult("Area");
 		
-		selectWindow("Results");
-		run("Close");
+		close("Results");
 		waitForUser("Select a particle that you would consider TOO BIG to be a single microglia cell and click letter m on your keyboard to measure its area. Do this a total of 5 times. Don't click OK until you're done with this!");
 		run("Summarize");
 		//number_rows = nResults;
 		area_max = getResult("Area", nResults-2);
 		
 		// close everything before starting with rest of macro
-		selectWindow("Results");
-		run("Close");
+		close("Results");
 		selectImage(nImages());
 		run("Close");
-		selectWindow("ROI Manager");
-	    run("Close");
-	    selectWindow("B&C");
-	    run("Close");
+		close("ROI Manager");
+	    close("B&C");
 	    
 	    // conditional printing for saving final parameters
 		if(auto_or_autolocal == "Auto thresholding"){
@@ -411,8 +407,7 @@ thresholding_parameters2 = newArray("Bernsen","Contrast","Mean","Median","MidGre
 		
 		// SAVE AREA MEASURES
 		saveAs("Results", output2 + "/Areas.csv");
-		selectWindow("Results");
-	   	run("Close");
+		close("Results");
 		
 		print("Thresholding finished");
 		
