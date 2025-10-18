@@ -355,6 +355,21 @@ thresholding_parameters2 = newArray("Bernsen","Contrast","Mean","Median","MidGre
 		
 		//area measurements saved to parent folder
 		output2=File.getParent(output);
+		
+		if (use_batchmode) {//do all directory selection at the start
+			//use file browser to choose path and files to run plugin on
+			setOption("JFileChooser",true);
+			cellROI_output=getDirectory("Choose output folder to write single cell images to");
+			//use file browser to choose path and files to run plugin on
+			setOption("JFileChooser",true);
+			skeleton_output=getDirectory("Choose output folder to write skeleton results to");
+			
+			//use file browser to choose path and files to run plugin on
+			setOption("JFileChooser",true);
+			skeleton2_output=getDirectory("Choose output folder to write skeletonized images to");
+		}
+
+			
 
 		//dialog box
 		Dialog.create("MicrogliaMorphology");
@@ -430,11 +445,13 @@ thresholding_parameters2 = newArray("Bernsen","Contrast","Mean","Median","MidGre
 		thresholded_input=getFileList(thresholded_dir);
 		count=thresholded_input.length;
 	
-		//use file browser to choose path and files to run plugin on
-		setOption("JFileChooser",true);
-		cellROI_output=getDirectory("Choose output folder to write single cell images to");
 		
 		if (!use_batchmode) {//skip dialog about file selection
+			//use file browser to choose path and files to run plugin on
+			setOption("JFileChooser",true);
+			cellROI_output=getDirectory("Choose output folder to write single cell images to");
+			
+
 			//dialog box
 			Dialog.create("MicrogliaMorphology");
 			Dialog.addMessage("Processing files from directory:");
@@ -496,15 +513,17 @@ thresholding_parameters2 = newArray("Bernsen","Contrast","Mean","Median","MidGre
 		cell_input=getFileList(cell_dir);
 		cell_count=cell_input.length;
 	
-		//use file browser to choose path and files to run plugin on
-		setOption("JFileChooser",true);
-		skeleton_output=getDirectory("Choose output folder to write skeleton results to");
-		
-		//use file browser to choose path and files to run plugin on
-		setOption("JFileChooser",true);
-		skeleton2_output=getDirectory("Choose output folder to write skeletonized images to");
 		
 		if (!use_batchmode) {
+			//use file browser to choose path and files to run plugin on
+			setOption("JFileChooser",true);
+			skeleton_output=getDirectory("Choose output folder to write skeleton results to");
+			
+			//use file browser to choose path and files to run plugin on
+			setOption("JFileChooser",true);
+			skeleton2_output=getDirectory("Choose output folder to write skeletonized images to");
+			
+
 			//dialog box
 			Dialog.create("MicrogliaMorphology");
 			Dialog.addMessage("Processing files from directory:");
