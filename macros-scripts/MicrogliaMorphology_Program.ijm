@@ -91,6 +91,7 @@ function thresholding2(input, output, filename) {
 	}
 
 //Generating Single Cell ROIs from thresholded images
+//Generating Single Cell ROIs from thresholded images
 function cellROI(input, output, filename, min, max){
 		print(input + filename);
     	open(input + filename);
@@ -108,32 +109,34 @@ function cellROI(input, output, filename, min, max){
 		roiManager("Measure");	
 		
 		if (nResults > 0) {
-			for (i = 0; i < nResults(); i++) {
-			//for (i = 0; i < 5; i++) {
-				selectWindow("Results");
-				v = getResult('Area', i);
-				
-				if((min < v) && (v < max)){
-					selectWindow("Results");
-					label = getResultString("Label", i);
-					label = label.replace(':','_');
+			selectWindow("Results");
+			area = Table.getColumn("Area");
+			label = Table.getColumn("Label");
+			close("Results");
+			Array.print(area); 	
+			for (i = 0; i < area.length; i++) {
+		
+				if((min < area[i]) && (area[i] < max)){
+					label_temp = label[i];
+					label_temp = label_temp.replace(':','_');
 					roiManager("Select", i);
-					run("Duplicate...", "title=&label");
+					run("Duplicate...", "title=" + label_temp);
 					setBackgroundColor(0, 0, 0);
 					run("Clear Outside");
-					saveAs("Tiff", dirCropOutput+File.separator+label+".tif");
-					print(label);
-					selectWindow(label+".tif");
-					run("Close");				
+					saveAs("Tiff", dirCropOutput+File.separator+label_temp+".tif");
+					print(label_temp);
+					print(i + "/" + area.length);
+					close(label_temp+".tif");
 				}
 			}
-			selectWindow("Results");//needs to be in this if statement in case there were no ROIs
-		   	run("Close");
+			return("");
+		} 
+		else {
+			print("A problem occured in image " +  filename + ".");
+			return(filename);
 		}
-		selectWindow(mainTitle);
-		run("Close");
-	    selectWindow("ROI Manager");
-	    run("Close");
+		close(filename);
+		roiManager("reset");
     }
 
 
@@ -452,19 +455,22 @@ thresholding_parameters2 = newArray("Bernsen","Contrast","Mean","Median","MidGre
 		} else {
 			setBatchMode("show");
 		}
+		
+		skipped_files = newArray();
 		for (i=(startAt-1); i<(endAt); i++){
 			if (use_batchmode) {
 				print("Creating single cell ROI, image " + (i + 1) + " out of " + endAt); //have some kind of update while in batchmode
 			} 
-				cellROI(thresholded_dir, cellROI_output, thresholded_input[i], area_min, area_max);
+				skipped_files = Array.concat(skipped_files, cellROI(thresholded_dir, cellROI_output, thresholded_input[i], area_min, area_max));
 		}
 		
+		skipped_files = Array.deleteValue(skipped_files, "");
 		
 		if (use_batchmode) {
 			setBatchMode(false);
 		}
 		
-	    print("Finished generating single cell ROIs");
+	    print("Finished generating single cell ROIs. The following files were skipped: " + String.join(skipped_files, " "));
 
 // Progress message
 		Dialog.create("MicrogliaMorphology");
