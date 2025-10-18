@@ -346,7 +346,7 @@ thresholding_parameters2 = newArray("Bernsen","Contrast","Mean","Median","MidGre
 //use file browser to choose path and files to run plugin on
 		setOption("JFileChooser",true);
 		subregion_dir=getDirectory("Choose parent folder containing original input images");
-		subregion_input=getFileList(subregion_dir);
+		subregion_input=Array.sort(getFileList(subregion_dir));
 		autocount=subregion_input.length;
 			
 		//use file browser to choose path and files to save output to
@@ -442,7 +442,7 @@ thresholding_parameters2 = newArray("Bernsen","Contrast","Mean","Median","MidGre
 		} else {
 			thresholded_dir = output;
 		}
-		thresholded_input=getFileList(thresholded_dir);
+		thresholded_input=Array.sort(getFileList(thresholded_dir));
 		count=thresholded_input.length;
 	
 		
@@ -510,7 +510,7 @@ thresholding_parameters2 = newArray("Bernsen","Contrast","Mean","Median","MidGre
 		} else {
 			cell_dir = cellROI_output
 		}
-		cell_input=getFileList(cell_dir);
+		cell_input=Array.sort(getFileList(cell_dir));
 		cell_count=cell_input.length;
 	
 		
