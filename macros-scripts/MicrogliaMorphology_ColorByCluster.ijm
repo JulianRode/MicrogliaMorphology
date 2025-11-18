@@ -114,122 +114,126 @@ function listFiles(dir, numFiles, fileList, searchString) {
 		
 		// loop through original images
 		for(i=0; i<(ColorByCluster_originalimages_count); i++){
-			
 			// extract out common string to search for across folders from original .tiff files
 			ColorByCluster_originalimage = ColorByCluster_originalimages[i];
-			StringToSearchFor = File.getNameWithoutExtension(ColorByCluster_originalimages_dir + ColorByCluster_originalimage); 
-			print(StringToSearchFor);
 			
-			// loop through thresholded folder, find the file with matching string, open, and print file name
-			listFiles(ColorByCluster_thresholdedimages_dir, ColorByCluster_thresholdedimages_count, ColorByCluster_thresholdedimages, StringToSearchFor);
+			// only do analysis if both the image and the csv file exist
+			//could expand to also check for the thresholded image (if extension is known from previous step - I am not sure if it is a good idea to generalize that yet
+			if (File.exists(ColorByCluster_originalimages_dir + ColorByCluster_originalimage) && File.exists(ColorByCluster_clusters_dir + ColorByCluster_clusters[i])) {
+				StringToSearchFor = File.getNameWithoutExtension(ColorByCluster_originalimages_dir + ColorByCluster_originalimage); 
+				print(StringToSearchFor);
+				
+				// loop through thresholded folder, find the file with matching string, open, and print file name
+				listFiles(ColorByCluster_thresholdedimages_dir, ColorByCluster_thresholdedimages_count, ColorByCluster_thresholdedimages, StringToSearchFor);
+				
+				run("ROI Manager...");
+				roiManager("Show All");
+				roiManager("Show None");
+				run("Analyze Particles...", "pixel add");
+				close();
+					
+				// open original .tiff file and print file name
+				open(ColorByCluster_originalimages_dir + ColorByCluster_originalimage);
+				print(ColorByCluster_originalimages_dir + ColorByCluster_originalimage);
+				
+				// loop through ColorByCluster csv files folder, find the file with matching string, open, and print file name
+				listFiles(ColorByCluster_clusters_dir, ColorByCluster_clusters_count, ColorByCluster_clusters, StringToSearchFor);
+				
+				x = File.openAsString(ColorByCluster_clusters_dir + ColorByCluster_clusters[i]);
+				rows = split(x,"\n");	
 			
-			run("ROI Manager...");
-			roiManager("Show All");
-			roiManager("Show None");
-			run("Analyze Particles...", "pixel add");
-			close();
+				roiManager("Show All without labels");
+				roiManager("Set Color", "black");
 				
-			// open original .tiff file and print file name
-			open(ColorByCluster_originalimages_dir + ColorByCluster_originalimage);
-			print(ColorByCluster_originalimages_dir + ColorByCluster_originalimage);
-			
-			// loop through ColorByCluster csv files folder, find the file with matching string, open, and print file name
-			listFiles(ColorByCluster_clusters_dir, ColorByCluster_clusters_count, ColorByCluster_clusters, StringToSearchFor);
-			
-			x = File.openAsString(ColorByCluster_clusters_dir + ColorByCluster_clusters[i]);
-			rows = split(x,"\n");	
-		
-			roiManager("Show All without labels");
-			roiManager("Set Color", "black");
-			
-			// ColorByCluster
-			for(n=0; n<rows.length-1; n++) {
-				cluster = Table.getString("Cluster",n);
-			
-					if(cluster==1){
-						label2 = Table.getString("ID",n);
-						roi_idx = findRoiWithName(label2);
-						roiManager("Select", roi_idx);
-						Roi.setFillColor(Cluster1);
+				// ColorByCluster
+				for(n=0; n<rows.length-1; n++) {
+					cluster = Table.getString("Cluster",n);
+				
+						if(cluster==1){
+							label2 = Table.getString("ID",n);
+							roi_idx = findRoiWithName(label2);
+							roiManager("Select", roi_idx);
+							Roi.setFillColor(Cluster1);
+					}
+					
+						if(cluster==2){
+							label2 = Table.getString("ID",n);
+							roi_idx = findRoiWithName(label2);
+							roiManager("Select", roi_idx);
+							Roi.setFillColor(Cluster2);
+					}
+					
+						if(cluster==3){
+							label2 = Table.getString("ID",n);
+							roi_idx = findRoiWithName(label2);
+							roiManager("Select", roi_idx);
+							Roi.setFillColor(Cluster3);
+					}
+					
+						if(cluster==4){
+							label2 = Table.getString("ID",n);
+							roi_idx = findRoiWithName(label2);
+							roiManager("Select", roi_idx);
+							Roi.setFillColor(Cluster4);
+					}
+					
+						if(cluster==5){
+							label2 = Table.getString("ID",n);
+							roi_idx = findRoiWithName(label2);
+							roiManager("Select", roi_idx);
+							Roi.setFillColor(Cluster5);
+					}
+					
+						if(cluster==6){
+							label2 = Table.getString("ID",n);
+							roi_idx = findRoiWithName(label2);
+							roiManager("Select", roi_idx);
+							Roi.setFillColor(Cluster6);
+					}
+					
+						if(cluster==7){
+							label2 = Table.getString("ID",n);
+							roi_idx = findRoiWithName(label2);
+							roiManager("Select", roi_idx);
+							Roi.setFillColor(Cluster7);
+					}
+					
+						if(cluster==8){
+							label2 = Table.getString("ID",n);
+							roi_idx = findRoiWithName(label2);
+							roiManager("Select", roi_idx);
+							Roi.setFillColor(Cluster8);
+					}
+					
+						if(cluster==9){
+							label2 = Table.getString("ID",n);
+							roi_idx = findRoiWithName(label2);
+							roiManager("Select", roi_idx);
+							Roi.setFillColor(Cluster9);
+					}
+					
+						if(cluster==10){
+							label2 = Table.getString("ID",n);
+							roi_idx = findRoiWithName(label2);
+							roiManager("Select", roi_idx);
+							Roi.setFillColor(Cluster10);
+					}
+				
 				}
 				
-					if(cluster==2){
-						label2 = Table.getString("ID",n);
-						roi_idx = findRoiWithName(label2);
-						roiManager("Select", roi_idx);
-						Roi.setFillColor(Cluster2);
-				}
+				run("Flatten");
 				
-					if(cluster==3){
-						label2 = Table.getString("ID",n);
-						roi_idx = findRoiWithName(label2);
-						roiManager("Select", roi_idx);
-						Roi.setFillColor(Cluster3);
-				}
+				// save into ColorByCluster images
+				saveAs("Tiff", ColorByCluster_output + ColorByCluster_originalimage + "_ColorByCluster");
 				
-					if(cluster==4){
-						label2 = Table.getString("ID",n);
-						roi_idx = findRoiWithName(label2);
-						roiManager("Select", roi_idx);
-						Roi.setFillColor(Cluster4);
-				}
-				
-					if(cluster==5){
-						label2 = Table.getString("ID",n);
-						roi_idx = findRoiWithName(label2);
-						roiManager("Select", roi_idx);
-						Roi.setFillColor(Cluster5);
-				}
-				
-					if(cluster==6){
-						label2 = Table.getString("ID",n);
-						roi_idx = findRoiWithName(label2);
-						roiManager("Select", roi_idx);
-						Roi.setFillColor(Cluster6);
-				}
-				
-					if(cluster==7){
-						label2 = Table.getString("ID",n);
-						roi_idx = findRoiWithName(label2);
-						roiManager("Select", roi_idx);
-						Roi.setFillColor(Cluster7);
-				}
-				
-					if(cluster==8){
-						label2 = Table.getString("ID",n);
-						roi_idx = findRoiWithName(label2);
-						roiManager("Select", roi_idx);
-						Roi.setFillColor(Cluster8);
-				}
-				
-					if(cluster==9){
-						label2 = Table.getString("ID",n);
-						roi_idx = findRoiWithName(label2);
-						roiManager("Select", roi_idx);
-						Roi.setFillColor(Cluster9);
-				}
-				
-					if(cluster==10){
-						label2 = Table.getString("ID",n);
-						roi_idx = findRoiWithName(label2);
-						roiManager("Select", roi_idx);
-						Roi.setFillColor(Cluster10);
-				}
-			
+				// close everything
+				close();
+				close();
+				selectWindow("ROI Manager");
+				run("Close");
+				selectWindow(ColorByCluster_clusters[i]);
+				run("Close");
 			}
-			
-			run("Flatten");
-			
-			// save into ColorByCluster images
-			saveAs("Tiff", ColorByCluster_output + ColorByCluster_originalimage + "_ColorByCluster");
-			
-			// close everything
-			close();
-			close();
-			selectWindow("ROI Manager");
-			run("Close");
-			selectWindow(ColorByCluster_clusters[i]);
-			run("Close");
 		}
 		print("done!");
 	}
