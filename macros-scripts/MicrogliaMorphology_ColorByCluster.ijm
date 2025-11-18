@@ -62,6 +62,8 @@ function listFiles(dir, numFiles, fileList, searchString) {
 
 //use file browser to choose path and files to run plugin on
 
+skipped_files = newArray();
+
 // if batch mode = yes
 	if(batchmodechoice){
 		setOption("JFileChooser",true);
@@ -233,9 +235,15 @@ function listFiles(dir, numFiles, fileList, searchString) {
 				run("Close");
 				selectWindow(ColorByCluster_clusters[i]);
 				run("Close");
+			} else {
+				skipped_files = Array.concat(skipped_files , ColorByCluster_clusters[i]);
 			}
 		}
 		print("done!");
+	}
+	if (skipped_files.length > 0) {
+		print("There was an error with the following files, they were skipped: ");
+		Array.print(skipped_files);
 	}
 
 // if batch mode = no
