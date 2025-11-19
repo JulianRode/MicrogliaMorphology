@@ -31,12 +31,22 @@ function listFiles(dir, numFiles, fileList, searchString) {
     //dir = File.openDirectory(directory);
     //dir = directory;
     //numFiles = dir.getFileCount();
+    found = false;
     for (i = 0; i < (numFiles); i++) {
         fileName = fileList[i];
         if (startsWith(fileName, searchString)){
+        	print("trying");
         	openFile(dir + fileName);
+        	print("succeeded");
             print(dir + fileName);
+            found = true;
+            break;
         }
+    }
+    if (found) {
+		return fileName;
+    } else {
+		return "Not found";
     }
 }
 
@@ -118,15 +128,22 @@ skipped_files = newArray();
 		for(i=0; i<(ColorByCluster_originalimages_count); i++){
 			// extract out common string to search for across folders from original .tiff files
 			ColorByCluster_originalimage = ColorByCluster_originalimages[i];
+			print(ColorByCluster_originalimage);
+			StringToSearchFor = File.getNameWithoutExtension(ColorByCluster_originalimages_dir + ColorByCluster_originalimage); 
+			print(StringToSearchFor);
+			// loop through ColorByCluster csv files folder, find the file with matching string, open, and print file name
+			cluster_file = listFiles(ColorByCluster_clusters_dir, ColorByCluster_clusters_count, ColorByCluster_clusters, StringToSearchFor);
+			// loop through thresholded folder, find the file with matching string, open, and print file name
+			threshold_file = listFiles(ColorByCluster_thresholdedimages_dir, ColorByCluster_thresholdedimages_count, ColorByCluster_thresholdedimages, StringToSearchFor);
+
+
+
 			
 			// only do analysis if both the image and the csv file exist
 			//could expand to also check for the thresholded image (if extension is known from previous step - I am not sure if it is a good idea to generalize that yet
-			if (File.exists(ColorByCluster_originalimages_dir + ColorByCluster_originalimage) && File.exists(ColorByCluster_clusters_dir + ColorByCluster_clusters[i])) {
-				StringToSearchFor = File.getNameWithoutExtension(ColorByCluster_originalimages_dir + ColorByCluster_originalimage); 
+			if (File.exists(ColorByCluster_originalimages_dir + ColorByCluster_originalimage) && cluster_file != "Not found" && threshold_file != "Not found") {
 				print(StringToSearchFor);
 				
-				// loop through thresholded folder, find the file with matching string, open, and print file name
-				listFiles(ColorByCluster_thresholdedimages_dir, ColorByCluster_thresholdedimages_count, ColorByCluster_thresholdedimages, StringToSearchFor);
 				
 				run("ROI Manager...");
 				roiManager("Show All");
@@ -138,17 +155,20 @@ skipped_files = newArray();
 				open(ColorByCluster_originalimages_dir + ColorByCluster_originalimage);
 				print(ColorByCluster_originalimages_dir + ColorByCluster_originalimage);
 				
-				// loop through ColorByCluster csv files folder, find the file with matching string, open, and print file name
-				listFiles(ColorByCluster_clusters_dir, ColorByCluster_clusters_count, ColorByCluster_clusters, StringToSearchFor);
-				
+				nrow = Table.size();
+				/*
 				x = File.openAsString(ColorByCluster_clusters_dir + ColorByCluster_clusters[i]);
 				rows = split(x,"\n");	
-			
+				*/
 				roiManager("Show All without labels");
 				roiManager("Set Color", "black");
 				
 				// ColorByCluster
-				for(n=0; n<rows.length-1; n++) {
+				for(n=0; n<nrow; n++) {
+					print("test1");
+					print(cluster_file);
+					selectWindow(cluster_file);
+					print("test2");
 					cluster = Table.getString("Cluster",n);
 				
 						if(cluster==1){
