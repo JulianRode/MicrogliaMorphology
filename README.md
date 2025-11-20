@@ -248,6 +248,9 @@ Some important notes
 </summary>
 
 1.  Run FracLac plugin: *Plugins \> Fractal Analysis \> FracLac*
+1.1 Especially large batches might cumulatively max out ImageJs memory.
+    In that case you need to launch ImageJ with a different garbage collector through the command line:
+    "ImageJ-win64.exe -XX:+UseParNewGC" 
 2.  Select **BC** (box counting) in Fraclac GUI and select the following
     options (adapted from [Young et al.,
     2018](https://www.jove.com/t/57648/quantifying-microglia-morphology-from-photomicrographs),
