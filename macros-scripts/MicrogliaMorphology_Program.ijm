@@ -19,7 +19,11 @@ function thresholding(input, output, filename) {
 		run("Grays");
 		// adjust the brighness and contrast to make sure you can visualize all microglia processes
 		// in ImageJ, B&C are changed by updating the image's lookup table, so pixel values are unchanged
+<<<<<<< HEAD
 		run("Brightness/Contrast...");
+=======
+		//run("Brightness/Contrast...");
+>>>>>>> 63cf4a923b20b4c8b350712d71a94aca651098d8
 		run("Enhance Contrast", "saturated=0.35");
 		// run Unsharp Mask filter to further increase contrast of image using default settings
 		// this mask does not create details, but rather clarifies existing detail in image
@@ -62,7 +66,11 @@ function thresholding2(input, output, filename) {
 		run("Grays");
 		// adjust the brighness and contrast to make sure you can visualize all microglia processes
 		// in ImageJ, B&C are changed by updating the image's lookup table, so pixel values are unchanged
+<<<<<<< HEAD
 		run("Brightness/Contrast...");
+=======
+		//run("Brightness/Contrast...");
+>>>>>>> 63cf4a923b20b4c8b350712d71a94aca651098d8
 		run("Enhance Contrast", "saturated=0.35");
 		// run Unsharp Mask filter to further increase contrast of image using default settings
 		// this mask does not create details, but rather clarifies existing detail in image
@@ -129,7 +137,7 @@ function cellROI(input, output, filename, min, max){
 					close(label_temp+".tif");
 				}
 			}
-			return("");
+			return "";
 		} 
 		else {
 			print("A problem occured in image " +  filename + ".");
@@ -217,7 +225,11 @@ thresholding_parameters2 = newArray("Bernsen","Contrast","Mean","Median","MidGre
 				run("Grays");
 				// adjust the brighness and contrast to make sure you can visualize all microglia processes
 				// in ImageJ, B&C are changed by updating the image's lookup table, so pixel values are unchanged
+<<<<<<< HEAD
 				run("Brightness/Contrast...");
+=======
+				//run("Brightness/Contrast...");
+>>>>>>> 63cf4a923b20b4c8b350712d71a94aca651098d8
 				run("Enhance Contrast", "saturated=0.35");
 				// run Unsharp Mask filter to further increase contrast of image using default settings
 				// this mask does not create details, but rather clarifies existing detail in image
@@ -253,7 +265,11 @@ thresholding_parameters2 = newArray("Bernsen","Contrast","Mean","Median","MidGre
 				run("Grays");
 				// adjust the brighness and contrast to make sure you can visualize all microglia processes
 				// in ImageJ, B&C are changed by updating the image's lookup table, so pixel values are unchanged
+<<<<<<< HEAD
 				run("Brightness/Contrast...");
+=======
+				//run("Brightness/Contrast...");
+>>>>>>> 63cf4a923b20b4c8b350712d71a94aca651098d8
 				run("Enhance Contrast", "saturated=0.35");
 				// run Unsharp Mask filter to further increase contrast of image using default settings
 				// this mask does not create details, but rather clarifies existing detail in image
@@ -466,17 +482,14 @@ thresholding_parameters2 = newArray("Bernsen","Contrast","Mean","Median","MidGre
 			
 			startAt=Dialog.getNumber();
 			endAt=Dialog.getNumber();
+			setBatchMode("show");
 		} else {
 			//use all thresholded images
 			startAt = 1;
 			endAt = thresholded_input.length;
+			setBatchMode(true);
 		}
 		
-		if (use_batchmode) {
-			setBatchMode(true);
-		} else {
-			setBatchMode("show");
-		}
 		
 		skipped_files = newArray();
 		for (i=(startAt-1); i<(endAt); i++){
@@ -538,18 +551,14 @@ thresholding_parameters2 = newArray("Bernsen","Contrast","Mean","Median","MidGre
 			
 			startAt=Dialog.getNumber();
 			endAt=Dialog.getNumber();
+			setBatchMode("show");
 		} else {
 			//use all single cell images
 			startAt = 1;
 			endAt = cell_input.length;
-		}
+			setBatchMode(true);
 		}
 		
-    	if (use_batchmode) {
-			setBatchMode(true);
-		} else {
-			setBatchMode("show");
-		}
 		for (i=(startAt-1); i<(endAt); i++){
 			if (use_batchmode) {
 				print("Analyzing skeletons, image " + (i + 1) + " out of " + endAt); //have some kind of update while in batchmode
