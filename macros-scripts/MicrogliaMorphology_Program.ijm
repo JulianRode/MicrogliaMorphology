@@ -19,11 +19,8 @@ function thresholding(input, output, filename) {
 		run("Grays");
 		// adjust the brighness and contrast to make sure you can visualize all microglia processes
 		// in ImageJ, B&C are changed by updating the image's lookup table, so pixel values are unchanged
-<<<<<<< HEAD
-		run("Brightness/Contrast...");
-=======
+
 		//run("Brightness/Contrast...");
->>>>>>> 63cf4a923b20b4c8b350712d71a94aca651098d8
 		run("Enhance Contrast", "saturated=0.35");
 		// run Unsharp Mask filter to further increase contrast of image using default settings
 		// this mask does not create details, but rather clarifies existing detail in image
@@ -66,11 +63,8 @@ function thresholding2(input, output, filename) {
 		run("Grays");
 		// adjust the brighness and contrast to make sure you can visualize all microglia processes
 		// in ImageJ, B&C are changed by updating the image's lookup table, so pixel values are unchanged
-<<<<<<< HEAD
-		run("Brightness/Contrast...");
-=======
+
 		//run("Brightness/Contrast...");
->>>>>>> 63cf4a923b20b4c8b350712d71a94aca651098d8
 		run("Enhance Contrast", "saturated=0.35");
 		// run Unsharp Mask filter to further increase contrast of image using default settings
 		// this mask does not create details, but rather clarifies existing detail in image
@@ -96,6 +90,9 @@ function thresholding2(input, output, filename) {
 		saveAs("Tiff", output + filename + "_thresholded");
 		
 		close(filename);
+
+		close(filename + "_thresholded.tif");
+
 	}
 
 //Generating Single Cell ROIs from thresholded images
@@ -108,13 +105,13 @@ function cellROI(input, output, filename, min, max){
 		dirCropOutput=output;
 		
 	    run("ROI Manager...");
-	    roiManager("Show All");
-		roiManager("Deselect");
+	    roiManager("reset");
+	    Overlay.remove;
 		run("Set Measurements...", "area display redirect=None decimal=3");
 
 		run("Analyze Particles...", "pixel add");
-		roiManager("Show All");
 		roiManager("Measure");	
+		roiManager("Show All");
 		
 		if (nResults > 0) {
 			selectWindow("Results");
@@ -131,15 +128,15 @@ function cellROI(input, output, filename, min, max){
 					run("Duplicate...", "title=" + label_temp);
 					setBackgroundColor(0, 0, 0);
 					run("Clear Outside");
+	    			Overlay.remove;
 					saveAs("Tiff", dirCropOutput+File.separator+label_temp+".tif");
 					print(label_temp);
 					print(i + "/" + area.length);
 					close(label_temp+".tif");
 				}
 			}
-			return "";
-		} 
-		else {
+			return " ";
+		} else {
 			print("A problem occured in image " +  filename + ".");
 			return(filename);
 		}
@@ -225,11 +222,8 @@ thresholding_parameters2 = newArray("Bernsen","Contrast","Mean","Median","MidGre
 				run("Grays");
 				// adjust the brighness and contrast to make sure you can visualize all microglia processes
 				// in ImageJ, B&C are changed by updating the image's lookup table, so pixel values are unchanged
-<<<<<<< HEAD
-				run("Brightness/Contrast...");
-=======
+
 				//run("Brightness/Contrast...");
->>>>>>> 63cf4a923b20b4c8b350712d71a94aca651098d8
 				run("Enhance Contrast", "saturated=0.35");
 				// run Unsharp Mask filter to further increase contrast of image using default settings
 				// this mask does not create details, but rather clarifies existing detail in image
@@ -265,11 +259,8 @@ thresholding_parameters2 = newArray("Bernsen","Contrast","Mean","Median","MidGre
 				run("Grays");
 				// adjust the brighness and contrast to make sure you can visualize all microglia processes
 				// in ImageJ, B&C are changed by updating the image's lookup table, so pixel values are unchanged
-<<<<<<< HEAD
-				run("Brightness/Contrast...");
-=======
+
 				//run("Brightness/Contrast...");
->>>>>>> 63cf4a923b20b4c8b350712d71a94aca651098d8
 				run("Enhance Contrast", "saturated=0.35");
 				// run Unsharp Mask filter to further increase contrast of image using default settings
 				// this mask does not create details, but rather clarifies existing detail in image
@@ -496,10 +487,11 @@ thresholding_parameters2 = newArray("Bernsen","Contrast","Mean","Median","MidGre
 			if (use_batchmode) {
 				print("Creating single cell ROI, image " + (i + 1) + " out of " + endAt); //have some kind of update while in batchmode
 			} 
-				skipped_files = Array.concat(skipped_files, cellROI(thresholded_dir, cellROI_output, thresholded_input[i], area_min, area_max));
+				skipping = cellROI(thresholded_dir, cellROI_output, thresholded_input[i], area_min, area_max);
+				skipped_files = Array.concat(skipped_files, skipping);
 		}
 		
-		skipped_files = Array.deleteValue(skipped_files, "");
+		skipped_files = Array.deleteValue(skipped_files, " ");
 		
 		if (use_batchmode) {
 			setBatchMode(false);
@@ -521,7 +513,7 @@ thresholding_parameters2 = newArray("Bernsen","Contrast","Mean","Median","MidGre
 			File.setDefaultDir(cellROI_output);
 			cell_dir=getDirectory("Choose parent folder containing single-cell images");
 		} else {
-			cell_dir = cellROI_output
+			cell_dir = cellROI_output;
 		}
 		cell_input=Array.sort(getFileList(cell_dir));
 		cell_count=cell_input.length;
@@ -569,6 +561,7 @@ thresholding_parameters2 = newArray("Bernsen","Contrast","Mean","Median","MidGre
 		if (use_batchmode) {
 			setBatchMode(false);
 		}
+		close("*");
 		
 		print("Finished Analyzing Skeletons");
 	    print("done!");
