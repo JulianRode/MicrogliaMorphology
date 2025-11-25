@@ -19,7 +19,8 @@ function thresholding(input, output, filename) {
 		run("Grays");
 		// adjust the brighness and contrast to make sure you can visualize all microglia processes
 		// in ImageJ, B&C are changed by updating the image's lookup table, so pixel values are unchanged
-		run("Brightness/Contrast...");
+
+		//run("Brightness/Contrast...");
 		run("Enhance Contrast", "saturated=0.35");
 		// run Unsharp Mask filter to further increase contrast of image using default settings
 		// this mask does not create details, but rather clarifies existing detail in image
@@ -62,7 +63,8 @@ function thresholding2(input, output, filename) {
 		run("Grays");
 		// adjust the brighness and contrast to make sure you can visualize all microglia processes
 		// in ImageJ, B&C are changed by updating the image's lookup table, so pixel values are unchanged
-		run("Brightness/Contrast...");
+
+		//run("Brightness/Contrast...");
 		run("Enhance Contrast", "saturated=0.35");
 		// run Unsharp Mask filter to further increase contrast of image using default settings
 		// this mask does not create details, but rather clarifies existing detail in image
@@ -87,9 +89,13 @@ function thresholding2(input, output, filename) {
 		// save thresholded + cleaned image -- this is the input for skeleton analysis below
 		saveAs("Tiff", output + filename + "_thresholded");
 		
-		close();
+		close(filename);
+
+		close(filename + "_thresholded.tif");
+
 	}
 
+//Generating Single Cell ROIs from thresholded images
 //Generating Single Cell ROIs from thresholded images
 function cellROI(input, output, filename, min, max){
 		print(input + filename);
@@ -99,39 +105,43 @@ function cellROI(input, output, filename, min, max){
 		dirCropOutput=output;
 		
 	    run("ROI Manager...");
-	    roiManager("Show All");
-		roiManager("Deselect");
+	    roiManager("reset");
+	    Overlay.remove;
 		run("Set Measurements...", "area display redirect=None decimal=3");
 
 		run("Analyze Particles...", "pixel add");
-		roiManager("Show All");
 		roiManager("Measure");	
-				
-		for (i = 0; i < nResults(); i++) {
-		//for (i = 0; i < 5; i++) {
+		roiManager("Show All");
+		
+		if (nResults > 0) {
 			selectWindow("Results");
-			v = getResult('Area', i);
-			
-			if((min < v) && (v < max)){
-				selectWindow("Results");
-				label = getResultString("Label", i);
-				label = label.replace(':','_');
-				roiManager("Select", i);
-				run("Duplicate...", "title=&label");
-				setBackgroundColor(0, 0, 0);
-				run("Clear Outside");
-				saveAs("Tiff", dirCropOutput+File.separator+label+".tif");
-				print(label);
-				selectWindow(label+".tif");
-				run("Close");				
+			area = Table.getColumn("Area");
+			label = Table.getColumn("Label");
+			close("Results");
+			Array.print(area); 	
+			for (i = 0; i < area.length; i++) {
+		
+				if((min < area[i]) && (area[i] < max)){
+					label_temp = label[i];
+					label_temp = label_temp.replace(':','_');
+					roiManager("Select", i);
+					run("Duplicate...", "title=" + label_temp);
+					setBackgroundColor(0, 0, 0);
+					run("Clear Outside");
+	    			Overlay.remove;
+					saveAs("Tiff", dirCropOutput+File.separator+label_temp+".tif");
+					print(label_temp);
+					print(i + "/" + area.length);
+					close(label_temp+".tif");
+				}
 			}
+			return " ";
+		} else {
+			print("A problem occured in image " +  filename + ".");
+			return(filename);
 		}
-		selectWindow(mainTitle);
-		run("Close");
-		selectWindow("Results");
-	   	run("Close");
-	    selectWindow("ROI Manager");
-	    run("Close");
+		close(filename);
+		roiManager("reset");
     }
 
 
@@ -154,8 +164,8 @@ function skeleton(input, output, output2, filename) {
 	      // save tagged skeleton 
 	      saveAs("Tiff", output2 + filename + "_taggedskeleton");
 	      //close open windows
-	      close();
-	      close();
+	      close("Results");
+	      close(filename);
     }
 
 // choices in drop-down prompts for MicrogliaMorphology macro
@@ -212,7 +222,8 @@ thresholding_parameters2 = newArray("Bernsen","Contrast","Mean","Median","MidGre
 				run("Grays");
 				// adjust the brighness and contrast to make sure you can visualize all microglia processes
 				// in ImageJ, B&C are changed by updating the image's lookup table, so pixel values are unchanged
-				run("Brightness/Contrast...");
+
+				//run("Brightness/Contrast...");
 				run("Enhance Contrast", "saturated=0.35");
 				// run Unsharp Mask filter to further increase contrast of image using default settings
 				// this mask does not create details, but rather clarifies existing detail in image
@@ -248,7 +259,8 @@ thresholding_parameters2 = newArray("Bernsen","Contrast","Mean","Median","MidGre
 				run("Grays");
 				// adjust the brighness and contrast to make sure you can visualize all microglia processes
 				// in ImageJ, B&C are changed by updating the image's lookup table, so pixel values are unchanged
-				run("Brightness/Contrast...");
+
+				//run("Brightness/Contrast...");
 				run("Enhance Contrast", "saturated=0.35");
 				// run Unsharp Mask filter to further increase contrast of image using default settings
 				// this mask does not create details, but rather clarifies existing detail in image
@@ -262,7 +274,7 @@ thresholding_parameters2 = newArray("Bernsen","Contrast","Mean","Median","MidGre
 					run("Clear Outside"); 
 				}					
 				// use despeckle function to remove remaining single-pixel noise generated by thresholding
-				run("Despeckle");
+				//run("Despeckle");
 				// apply close function to connect any disconnected cell processes back to the rest of the cell
 				// this function connects two dark pixels if they are separated by up to 2 pixels
 				run("Close-");
@@ -281,22 +293,18 @@ thresholding_parameters2 = newArray("Bernsen","Contrast","Mean","Median","MidGre
 		run("Summarize");
 		area_min = getResult("Area");
 		
-		selectWindow("Results");
-		run("Close");
+		close("Results");
 		waitForUser("Select a particle that you would consider TOO BIG to be a single microglia cell and click letter m on your keyboard to measure its area. Do this a total of 5 times. Don't click OK until you're done with this!");
 		run("Summarize");
 		//number_rows = nResults;
 		area_max = getResult("Area", nResults-2);
 		
 		// close everything before starting with rest of macro
-		selectWindow("Results");
-		run("Close");
+		close("Results");
 		selectImage(nImages());
 		run("Close");
-		selectWindow("ROI Manager");
-	    run("Close");
-	    selectWindow("B&C");
-	    run("Close");
+		close("ROI Manager");
+	    close("B&C");
 	    
 	    // conditional printing for saving final parameters
 		if(auto_or_autolocal == "Auto thresholding"){
@@ -345,7 +353,7 @@ thresholding_parameters2 = newArray("Bernsen","Contrast","Mean","Median","MidGre
 //use file browser to choose path and files to run plugin on
 		setOption("JFileChooser",true);
 		subregion_dir=getDirectory("Choose parent folder containing original input images");
-		subregion_input=getFileList(subregion_dir);
+		subregion_input=Array.sort(getFileList(subregion_dir));
 		autocount=subregion_input.length;
 			
 		//use file browser to choose path and files to save output to
@@ -354,6 +362,21 @@ thresholding_parameters2 = newArray("Bernsen","Contrast","Mean","Median","MidGre
 		
 		//area measurements saved to parent folder
 		output2=File.getParent(output);
+		
+		if (use_batchmode) {//do all directory selection at the start
+			//use file browser to choose path and files to run plugin on
+			setOption("JFileChooser",true);
+			cellROI_output=getDirectory("Choose output folder to write single cell images to");
+			//use file browser to choose path and files to run plugin on
+			setOption("JFileChooser",true);
+			skeleton_output=getDirectory("Choose output folder to write skeleton results to");
+			
+			//use file browser to choose path and files to run plugin on
+			setOption("JFileChooser",true);
+			skeleton2_output=getDirectory("Choose output folder to write skeletonized images to");
+		}
+
+			
 
 		//dialog box
 		Dialog.create("MicrogliaMorphology");
@@ -406,107 +429,128 @@ thresholding_parameters2 = newArray("Bernsen","Contrast","Mean","Median","MidGre
 		
 		// SAVE AREA MEASURES
 		saveAs("Results", output2 + "/Areas.csv");
-		selectWindow("Results");
-	   	run("Close");
+		close("Results");
 		
 		print("Thresholding finished");
-
+		
+		if (!use_batchmode) {
 // Progress message
-		Dialog.create("MicrogliaMorphology");
-		Dialog.addMessage("Now that we are done thresholding,");
-		Dialog.addMessage("we will generate single-cell ROIs");
-		Dialog.show();
-
+			Dialog.create("MicrogliaMorphology");
+			Dialog.addMessage("Now that we are done thresholding,");
+			Dialog.addMessage("we will generate single-cell ROIs");
+			Dialog.show();
+	
 // STEP 2. Generating single-cell ROIs command
-
-  		//use file browser to choose path and files to run plugin on
-		setOption("JFileChooser",true);
-		File.setDefaultDir(output); //per default set it to the directory that was just output 
-		thresholded_dir=getDirectory("Choose parent folder containing thresholded images");
-		thresholded_input=getFileList(thresholded_dir);
+		
+	  		//use file browser to choose path and files to run plugin on
+			setOption("JFileChooser",true);
+			File.setDefaultDir(output); //per default set it to the directory that was just output 
+			thresholded_dir=getDirectory("Choose parent folder containing thresholded images");
+		} else {
+			thresholded_dir = output;
+		}
+		thresholded_input=Array.sort(getFileList(thresholded_dir));
 		count=thresholded_input.length;
 	
-		//use file browser to choose path and files to run plugin on
-		setOption("JFileChooser",true);
-		cellROI_output=getDirectory("Choose output folder to write single cell images to");
 		
-		//dialog box
-		Dialog.create("MicrogliaMorphology");
-		Dialog.addMessage("Processing files from directory:");
-		parentname=split(thresholded_dir,"/");
-		Dialog.addMessage(parentname[(parentname.length)-1]);
-		Dialog.addMessage("which has this many images:");
-		Dialog.addMessage(count);
-		Dialog.addMessage("Select range of images you'd like to analyze");
-		Dialog.addNumber("Start at Image:", startAt);
-		Dialog.addNumber("Stop at Image:", endAt);
-		Dialog.show();
-		
-		startAt=Dialog.getNumber();
-		endAt=Dialog.getNumber();
-		
-		if (use_batchmode) {
-			setBatchMode(true);
-		} else {
+		if (!use_batchmode) {//skip dialog about file selection
+			//use file browser to choose path and files to run plugin on
+			setOption("JFileChooser",true);
+			cellROI_output=getDirectory("Choose output folder to write single cell images to");
+			
+
+			//dialog box
+			Dialog.create("MicrogliaMorphology");
+			Dialog.addMessage("Processing files from directory:");
+			parentname=split(thresholded_dir,"/");
+			Dialog.addMessage(parentname[(parentname.length)-1]);
+			Dialog.addMessage("which has this many images:");
+			Dialog.addMessage(count);
+			Dialog.addMessage("Select range of images you'd like to analyze");
+			Dialog.addNumber("Start at Image:", startAt);
+			Dialog.addNumber("Stop at Image:", endAt);
+			Dialog.show();
+			
+			startAt=Dialog.getNumber();
+			endAt=Dialog.getNumber();
 			setBatchMode("show");
+		} else {
+			//use all thresholded images
+			startAt = 1;
+			endAt = thresholded_input.length;
+			setBatchMode(true);
 		}
+		
+		
+		skipped_files = newArray();
 		for (i=(startAt-1); i<(endAt); i++){
 			if (use_batchmode) {
 				print("Creating single cell ROI, image " + (i + 1) + " out of " + endAt); //have some kind of update while in batchmode
 			} 
-				cellROI(thresholded_dir, cellROI_output, thresholded_input[i], area_min, area_max);
+				skipping = cellROI(thresholded_dir, cellROI_output, thresholded_input[i], area_min, area_max);
+				skipped_files = Array.concat(skipped_files, skipping);
 		}
 		
+		skipped_files = Array.deleteValue(skipped_files, " ");
 		
 		if (use_batchmode) {
 			setBatchMode(false);
 		}
 		
-	    print("Finished generating single cell ROIs");
+	    print("Finished generating single cell ROIs. The following files were skipped: " + String.join(skipped_files, " "));
 
+		if (!use_batchmode) {
 // Progress message
-		Dialog.create("MicrogliaMorphology");
-		Dialog.addMessage("Now that we are done generating single-cell ROIs,");
-		Dialog.addMessage("we will analyze their skeletons");
-		Dialog.show();
-
+			Dialog.create("MicrogliaMorphology");
+			Dialog.addMessage("Now that we are done generating single-cell ROIs,");
+			Dialog.addMessage("we will analyze their skeletons");
+			Dialog.show();
+	
 // STEP 3. Skeletonize/AnalyzeSkeleton
         
-        //use file browser to choose path and files to run plugin on
-		setOption("JFileChooser",true);
-		File.setDefaultDir(cellROI_output);
-		cell_dir=getDirectory("Choose parent folder containing single-cell images");
-		cell_input=getFileList(cell_dir);
+	        //use file browser to choose path and files to run plugin on
+			setOption("JFileChooser",true);
+			File.setDefaultDir(cellROI_output);
+			cell_dir=getDirectory("Choose parent folder containing single-cell images");
+		} else {
+			cell_dir = cellROI_output;
+		}
+		cell_input=Array.sort(getFileList(cell_dir));
 		cell_count=cell_input.length;
 	
-		//use file browser to choose path and files to run plugin on
-		setOption("JFileChooser",true);
-		skeleton_output=getDirectory("Choose output folder to write skeleton results to");
 		
-		//use file browser to choose path and files to run plugin on
-		setOption("JFileChooser",true);
-		skeleton2_output=getDirectory("Choose output folder to write skeletonized images to");
-		
-		//dialog box
-		Dialog.create("MicrogliaMorphology");
-		Dialog.addMessage("Processing files from directory:");
-		parentname=split(cell_dir,"/");
-		Dialog.addMessage(parentname[(parentname.length)-1]);
-		Dialog.addMessage("which has this many images:");
-		Dialog.addMessage(cell_count);
-		Dialog.addMessage("Select range of cell images you'd like to analyze");
-		Dialog.addNumber("Start at Image:", startAt);
-		Dialog.addNumber("Stop at Image:", endAt);
-		Dialog.show();
-		
-		startAt=Dialog.getNumber();
-		endAt=Dialog.getNumber();
-       
-    	if (use_batchmode) {
-			setBatchMode(true);
-		} else {
+		if (!use_batchmode) {
+			//use file browser to choose path and files to run plugin on
+			setOption("JFileChooser",true);
+			skeleton_output=getDirectory("Choose output folder to write skeleton results to");
+			
+			//use file browser to choose path and files to run plugin on
+			setOption("JFileChooser",true);
+			skeleton2_output=getDirectory("Choose output folder to write skeletonized images to");
+			
+
+			//dialog box
+			Dialog.create("MicrogliaMorphology");
+			Dialog.addMessage("Processing files from directory:");
+			parentname=split(cell_dir,"/");
+			Dialog.addMessage(parentname[(parentname.length)-1]);
+			Dialog.addMessage("which has this many images:");
+			Dialog.addMessage(cell_count);
+			Dialog.addMessage("Select range of cell images you'd like to analyze");
+			Dialog.addNumber("Start at Image:", startAt);
+			Dialog.addNumber("Stop at Image:", endAt);
+			Dialog.show();
+			
+			startAt=Dialog.getNumber();
+			endAt=Dialog.getNumber();
 			setBatchMode("show");
+		} else {
+			//use all single cell images
+			startAt = 1;
+			endAt = cell_input.length;
+			setBatchMode(true);
 		}
+		
 		for (i=(startAt-1); i<(endAt); i++){
 			if (use_batchmode) {
 				print("Analyzing skeletons, image " + (i + 1) + " out of " + endAt); //have some kind of update while in batchmode
@@ -517,6 +561,7 @@ thresholding_parameters2 = newArray("Bernsen","Contrast","Mean","Median","MidGre
 		if (use_batchmode) {
 			setBatchMode(false);
 		}
+		close("*");
 		
 		print("Finished Analyzing Skeletons");
 	    print("done!");

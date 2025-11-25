@@ -248,12 +248,15 @@ Some important notes
 </summary>
 
 1.  Run FracLac plugin: *Plugins \> Fractal Analysis \> FracLac*
-2.  Select **BC** (box counting) in Fraclac GUI and select the following
+2.  Especially large batches might cumulatively max out ImageJs memory.
+    In that case you need to launch ImageJ with a different garbage collector through the command line:
+    "ImageJ-win64.exe -XX:+UseParNewGC" 
+3.  Select **BC** (box counting) in Fraclac GUI and select the following
     options (adapted from [Young et al.,
     2018](https://www.jove.com/t/57648/quantifying-microglia-morphology-from-photomicrographs),
     Section 5.5). **Make sure to select ‘lock black background’.**
     ![](./images/FracLac_options.png)
-3.  Select **Batch** in Fraclac GUI and follow prompts. Load in files
+4.  Select **Batch** in Fraclac GUI and follow prompts. Load in files
     from the directory you wrote your single-cell images to in Step 4.
     </details>
 

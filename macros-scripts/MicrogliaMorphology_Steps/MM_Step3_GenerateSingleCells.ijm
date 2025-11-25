@@ -21,32 +21,35 @@ function cellROI(input, output, filename, min, max){
 		run("Analyze Particles...", "pixel add");
 		roiManager("Show All");
 		roiManager("Measure");	
-				
-		for (i = 0; i < nResults(); i++) {
-		//for (i = 0; i < 5; i++) {
+		
+		if (nResults > 0) {
 			selectWindow("Results");
-			v = getResult('Area', i);
-			
-			if((min < v) && (v < max)){
-				selectWindow("Results");
-				label = getResultString("Label", i);
-				label = label.replace(':','_');
-				roiManager("Select", i);
-				run("Duplicate...", "title=&label");
-				setBackgroundColor(0, 0, 0);
-				run("Clear Outside");
-				saveAs("Tiff", dirCropOutput+File.separator+label+".tif");
-				print(label);
-				selectWindow(label+".tif");
-				run("Close");				
+			area = Table.getColumn("Area");
+			label = Table.getColumn("Label");
+			close("Results");
+			Array.print(area); 	
+			for (i = 0; i < area.length; i++) {
+		
+				if((min < area[i]) && (area[i] < max)){
+					label_temp = label[i];
+					label_temp = label_temp.replace(':','_');
+					roiManager("Select", i);
+					run("Duplicate...", "title=" + label_temp);
+					setBackgroundColor(0, 0, 0);
+					run("Clear Outside");
+					saveAs("Tiff", dirCropOutput+File.separator+label_temp+".tif");
+					print(label_temp);
+					print(i + "/" + area.length);
+					close(label_temp+".tif");
+				}
 			}
+			return("");
+		} else {
+			print("A problem occured in image " +  filename + ".");
+			return(filename);
 		}
-		selectWindow(mainTitle);
-		run("Close");
-		selectWindow("Results");
-	   	run("Close");
-	    selectWindow("ROI Manager");
-	    run("Close");
+		close(filename);
+		roiManager("reset");
     }
 
 
@@ -90,10 +93,12 @@ function cellROI(input, output, filename, min, max){
 		startAt=Dialog.getNumber();
 		endAt=Dialog.getNumber();
 		
-		setBatchMode("show");
+		setBatchMode(true);
+		skipped_files = newArray();
 		for (i=(startAt-1); i<(endAt); i++){
-				cellROI(thresholded_dir, cellROI_output, thresholded_input[i], area_min, area_max);
+				skipped_files = Array.concat(skipped_files, cellROI(thresholded_dir, cellROI_output, thresholded_input[i], area_min, area_max));
 		}
-		//setBatchMode(false);
+		skipped_files = Array.deleteValue(skipped_files, "");
+		setBatchMode(false);
 		
-	    print("Finished generating single cell ROIs");
+	    print("Finished generating single cell ROIs. The following files were skipped: " + String.join(skipped_files, " "));
