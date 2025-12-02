@@ -203,12 +203,26 @@ function analyze(input, results_output, skeleton_output, filename) {
 		close("Array_sorting");
 		
 		//get convex hull data
-		roi_number = roiManager("count");
-		//this makes a new Results table - that is why the others need to be closed / renamed
-		for (i = 0; i < roi_number; i++) {
+		for (i = 0; i < roiManager("count"); i++) {
+			selectWindow(filename);
 			roiManager("select", i);
+			
 			run("Convex Hull");
-			run("Measure");
+			run("Measure"); // this gets results for the hull data one for loop lower
+			major_feret = getValue("Feret");
+			minor_feret = getValue("MinFeret");
+			span = major_feret / minor_feret;
+			long_radii = get_long_radii();
+			max_radius = get_max(long_radii);
+			short_radii = get_short_radii(long_radii);
+			min_radius = get_min(short_radii);
+			radius_ratio = max_radius / min_radius;
+			Array.getStatistics(Array.concat(long_radii, short_radii), min, max, mean, stdDev);
+			coefficient_of_variation = stdDev / mean;
+			selectWindow("All_results");
+			Table.set("Hull span ratio", i + all_results_row_n, span);
+			Table.set("Max/min radii from hull", i + all_results_row_n, radius_ratio);
+			Table.set("Relative variation (CV) hull", i + all_results_row_n, coefficient_of_variation);
 		}
 		
 		selectWindow("Results");
@@ -227,6 +241,7 @@ function analyze(input, results_output, skeleton_output, filename) {
 				Table.set("hull_" + hull_headings[i], j, hull_info[j-all_results_row_n]);
 			}
 		}
+		
 		close("Results"); //these are the hull results that are now saved in the All_results table
 		
 		selectWindow("All_results");//save the growing results as an in-between step, but keep the table still open
@@ -240,6 +255,70 @@ function analyze(input, results_output, skeleton_output, filename) {
 	close(filename);
 	close("ROI Manager");
 }
+
+function get_long_radii() {
+	center_of_mass_x = getValue("XM");
+	center_of_mass_y = getValue("YM");
+	
+	getSelectionCoordinates(xpoints, ypoints);
+	
+	//from each node of the ROI get the distance to the center of mass
+	all_corner_distances = newArray(xpoints.length);
+	for (i = 0; i < all_corner_distances.length; i++) {
+		all_corner_distances[i] = sqrt(abs(Math.pow(xpoints[i] - center_of_mass_x, 2) + Math.pow(ypoints[i] - center_of_mass_y, 2)));
+	}
+	
+	return all_corner_distances;
+}
+
+function get_short_radii(long_radii) {
+	getSelectionCoordinates(xpoints, ypoints);
+	//from each edge of the ROI get the smallest distance to the center of mass (height of triangle when edge is the base)
+	all_midpoint_distances = newArray(long_radii.length);
+	
+	//Heron's formula to calc height of triangle: get length of all sides
+	//gotta start with the connection between the first and last point outside the loop
+	base_length = sqrt(abs(Math.pow(xpoints[0] - xpoints[xpoints.length - 1], 2) + Math.pow(ypoints[0] - ypoints[ypoints.length - 1], 2)));
+	//the two distances of the corners to the center of mass were already calculated
+	side_a_length = long_radii[0];
+	side_b_length = long_radii[long_radii.length - 1];
+	
+	semiperimeter = (side_a_length + base_length + side_b_length) / 2;
+	triangle_area = sqrt(semiperimeter * (semiperimeter - side_a_length) * (semiperimeter - base_length) * (semiperimeter - side_b_length));
+	all_midpoint_distances[0] = 2 * triangle_area / base_length;
+	
+	//now do the same for the rest of the point pairs 
+	for (i = 1; i < all_midpoint_distances.length; i++) {
+		base_length = sqrt(abs(Math.pow(xpoints[i] - xpoints[i - 1], 2) + Math.pow(ypoints[i] - ypoints[i - 1], 2)));
+		side_a_length = long_radii[i];
+		side_b_length = long_radii[i - 1];
+		
+		semiperimeter = (side_a_length + base_length + side_b_length) / 2;
+		triangle_area = sqrt(semiperimeter * (semiperimeter - side_a_length) * (semiperimeter - base_length) * (semiperimeter - side_b_length));
+		all_midpoint_distances[i] = 2 * triangle_area / base_length;
+	}
+	
+	return all_midpoint_distances;
+}
+
+//get the maximum value of an array
+function get_max(array) {
+	candidate = array[0];
+	for (i = 1; i < array.length; i++) {
+		candidate = maxOf(candidate, array[i]);
+	}
+	return candidate;
+}
+
+//get the maximum value of an array
+function get_min(array) {
+	candidate = array[0];
+	for (i = 1; i < array.length; i++) {
+		candidate = minOf(candidate, array[i]);
+	}
+	return candidate;
+}
+
 
 // choices in drop-down prompts for MicrogliaMorphology macro
 thresholding_approach = newArray("Auto thresholding", "Auto local thresholding");
@@ -263,7 +342,7 @@ var dayOfMonth_global = 0;
 var hour_global = 0; 
 var minute_global = 0;
 
-		getDateAndTime(year, month, dayOfWeek, dayOfMonth, hour, minute, second, msec);
+getDateAndTime(year, month, dayOfWeek, dayOfMonth, hour, minute, second, msec);
 year_global = year; 
 month_global = month;
 dayOfMonth_global = dayOfMonth;
