@@ -245,7 +245,7 @@ function analyze(input, results_output, skeleton_output, filename) {
 		close("Results"); //these are the hull results that are now saved in the All_results table
 		
 		selectWindow("All_results");//save the growing results as an in-between step, but keep the table still open
-		saveAs("Results", results_output + year_global + "_" + month_global + "_" + dayOfMonth_global + "_" + hour_global + "_" + minute_global + "_results.csv");
+		saveAs("Results", results_output + year_global + "_" + month_global + "_" + dayOfMonth_global + "_" + hour_global + "_" + minute_global + "_" + filename +  "_results.csv");
 		return " ";
 		
 	} else { // if no results were found
@@ -644,9 +644,10 @@ if (!use_batchmode) {//skip dialog about file selection
 	setBatchMode(true);
 }
 
-Table.create("All_results"); // this is what all results will be written to, save in the end
+
 skipped_files = newArray();
 for (i=(startAt-1); i<(endAt); i++){
+	Table.create("All_results"); // this is where all results will be written to, save in the end
 	if (use_batchmode) {
 		print("Creating single cell ROI, image " + (i + 1) + " out of " + endAt); //have some kind of update while in batchmode
 	} 
