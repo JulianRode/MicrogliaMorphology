@@ -306,6 +306,13 @@ thresholding_parameters2 = newArray("Bernsen","Contrast","Mean","Median","MidGre
 		close("ROI Manager");
 	    close("B&C");
 	    
+	    //get file input directory here to be able to compare with the test image directory
+	    setOption("JFileChooser",true);
+		subregion_dir=getDirectory("Choose parent folder containing original input images");
+		subregion_input=Array.sort(getFileList(subregion_dir));
+		autocount=subregion_input.length;
+			
+
 	    // conditional printing for saving final parameters
 		if(auto_or_autolocal == "Auto thresholding"){
 			finalprint = auto_method;
@@ -316,12 +323,29 @@ thresholding_parameters2 = newArray("Bernsen","Contrast","Mean","Median","MidGre
 
 	    // save final image set parameters to .txt file
 	    output2=File.getParent(path);
-	    f = File.open(output2 + "/FinalDatasetParameters.txt");
-	    print(f, auto_or_autolocal + " \n" + 
+	    subregion_dir_parts = split(subregion_dir, File.separator);
+	    // In case users took image from the "SingleChannelTiffs_Input" folder make sure to not save FinalDatasetParameters there. 
+	    // thanks to BaukjeBij for finding this bug and providing
+	    parts = split(output2, File.separator);
+		// Check if the last folder is "SingleChannelTiffs_Input"
+		if (parts[parts.length - 1] == subregion_dir_parts[subregion_dir_parts.length - 1) {
+		    parent_up=File.getParent(output2);
+		    f = File.open(parent_up + "/FinalDatasetParameters.txt");
+		   	print(f, auto_or_autolocal + " \n" + 
+	    	"Thresholding method = " + finalprint + " \n" +
+	    	"Lower cell area filter = " + area_min + " \n" + 
+	    	"Upper cell area filter = " + area_max + " \n" + 
+	    	"Setup ran on image=" + path);
+	    	File.close(f);
+			
+		} else {
+			f = File.open(output2 + "/FinalDatasetParameters.txt");
+			print(f, auto_or_autolocal + " \n" + 
 	    		 "Thresholding method = " + finalprint + " \n" +
 	    		 "Lower cell area filter = " + area_min + " \n" + 
 	    		 "Upper cell area filter = " + area_max);
 	    File.close(f);
+		} 
 				
 // Progress message: print summary statement of parameters
 		Dialog.create("MicrogliaMorphology");
@@ -351,11 +375,7 @@ thresholding_parameters2 = newArray("Bernsen","Contrast","Mean","Median","MidGre
 // STEP 2. Thresholding
 
 //use file browser to choose path and files to run plugin on
-		setOption("JFileChooser",true);
-		subregion_dir=getDirectory("Choose parent folder containing original input images");
-		subregion_input=Array.sort(getFileList(subregion_dir));
-		autocount=subregion_input.length;
-			
+		
 		//use file browser to choose path and files to save output to
 		setOption("JFileChooser",true);
 		output=getDirectory("Choose output folder to write thresholded images to");

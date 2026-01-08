@@ -3,7 +3,7 @@ MicrogliaMorphology
 
 #### *An ImageJ macro for microglia morphology analysis*
 
-**Created**: 15 June, 2023 **Last updated**: 10 August, 2025
+**Created**: 15 June, 2023 **Last updated**: 7 January, 2026
 
 ## Welcome to MicrogliaMorphology!
 
