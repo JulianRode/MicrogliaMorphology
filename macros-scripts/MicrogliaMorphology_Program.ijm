@@ -322,7 +322,7 @@ thresholding_parameters2 = newArray("Bernsen","Contrast","Mean","Median","MidGre
 		subregion_input=Array.sort(getFileList(subregion_dir));
 		autocount=subregion_input.length;
 		
-		if (use_test_image == true) {
+		if (!use_test_image == true) {
 			path = parent_directory;
 		}
 		
@@ -341,7 +341,7 @@ thresholding_parameters2 = newArray("Bernsen","Contrast","Mean","Median","MidGre
 	    // thanks to BaukjeBij for finding this bug and providing
 	    parts = split(output2, File.separator);
 		// Check if the last folder is "SingleChannelTiffs_Input"
-		if (parts[parts.length - 1] == subregion_dir_parts[subregion_dir_parts.length - 1) {
+		if (parts[parts.length - 1] == subregion_dir_parts[subregion_dir_parts.length - 1]) {
 		    parent_up=File.getParent(output2);
 		    f = File.open(parent_up + "/FinalDatasetParameters.txt");
 		   	print(f, auto_or_autolocal + " \n" + 
